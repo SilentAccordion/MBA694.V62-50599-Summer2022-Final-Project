@@ -1,6 +1,7 @@
 ---
 title: "Final Project AIC Version"
 subtitle: MBA 694
+author: Kristy Halderman 
 date: 'Due: July 29, 2022 at 5:00 pm'
 output:
   word_document: default
