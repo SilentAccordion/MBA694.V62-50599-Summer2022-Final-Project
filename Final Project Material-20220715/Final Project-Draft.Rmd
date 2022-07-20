@@ -26,6 +26,12 @@ library(tidyverse)
 # Dredge?
 library(MuMIn)
 
+library(psych)
+library(car)
+library(lattice)
+# ?mutate
+library(tidyverse)
+
 library(parallel)
 library(snow)
 knitr::write_bib(c("base","rmarkdown","knitr", #don't change these
@@ -85,7 +91,46 @@ clust <- try(makeCluster(getOption("cl.cores", 11), type = clusterType))
 
 <!-- i. (10 points) Describe variables -->
 <!-- ii. (10 points) Summarize variables in words and with appropriate tables. -->
+
+```{r quantSummary, echo=FALSE, eval=TRUE}
+
+# Need to remove Categorical Variables
+
+#Describe all quantitative variables at once
+quantVariableNames <- c("HHAGE","VCR","PLAYSTA","TVSIZE1","TVCOLOR","CROCKPOT","TOAST","OUTGRILL","MICRO")
+
+kable(describe(recs2015data_full[,quantVariableNames])[,-c(1,6:7,11:12)], digits=3,
+      caption="Table 1: Quantitative Variables")
+
+```
+
 <!-- iii. (10 points) Include data visualizations -->
+
+```{r catSummary, echo=FALSE, eval=TRUE}
+# Describe categorical variables, have to do them one at a time.
+
+# "HHAGE","VCR","PLAYSTA","TVSIZE1","TVCOLOR","CROCKPOT","TOAST","OUTGRILL","MICRO"
+
+kable(tally(~VCR, data=recs2015data_full), row.names=FALSE, caption="Table ##: Variable Name")
+
+kable(tally(~PLAYSTA, data=recs2015data_full), row.names=FALSE, caption="Table ##: Variable Name")
+
+kable(tally(~TVSIZE1, data=recs2015data_full), row.names=FALSE, caption="Table ##: Variable Name")
+
+kable(tally(~TVCOLOR, data=recs2015data_full), row.names=FALSE, caption="Table ##: Variable Name")
+
+kable(tally(~CROCKPOT, data=recs2015data_full), row.names=FALSE, caption="Table ##: Variable Name")
+
+kable(tally(~TOAST, data=recs2015data_full), row.names=FALSE, caption="Table ##: Variable Name")
+
+kable(tally(~OUTGRILL, data=recs2015data_full), row.names=FALSE, caption="Table ##: Variable Name")
+
+kable(tally(~MICRO, data=recs2015data_full), row.names=FALSE, caption="Table ##: Variable Name")
+
+
+```
+
+
 
 ### Research Question
 
