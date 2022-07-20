@@ -1,0 +1,194 @@
+---
+title: "Final Project AIC Version"
+subtitle: MBA 694
+author: Kristy Halderman & Bradford Knowlton
+date: 'Due: July 29, 2022 at 5:00 pm'
+output:
+  word_document: default
+  pdf_document: default
+bibliography: packages_finalProj.bib
+nocite: '@*'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, 
+                      eval = TRUE,
+                      message = F, 
+                      warning = F, 
+                      fig.width = 8, 
+                      fig.height = 3)
+options(show.signif.stars = FALSE)
+library(knitr)
+library(readr)
+library(knitr)
+library(mosaic)
+library(tidyverse)
+# Dredge?
+library(MuMIn)
+
+library(parallel)
+library(snow)
+knitr::write_bib(c("base","rmarkdown","knitr", #don't change these
+                   "mosaic", "tidyverse"),
+                   "packages_finalProj.bib", width=60)
+# recs2015data_subset <- read_csv("recs2015_public_v4_subset_1_recoded.csv")
+# getwd()
+recs2015data_full <- read_csv("./recs2015_public_v4.csv")
+
+```
+
+```{r ClusterSetup, eval=TRUE, echo=FALSE}
+# require(parallel)
+# require(snow)
+# https://stackoverflow.com/q/55858799
+#detects number of cores available to use for parallel package
+# nCores <- detectCores(logical = FALSE)
+# cat(nCores, " cores detected.")  
+
+# detect threads with parallel()
+# nThreads<- detectCores(logical = TRUE)
+# cat(nThreads, " threads detected.")
+
+clusterType <- if(length(find.package("snow", quiet = TRUE))) "SOCK" else "PSOCK"
+
+clust <- try(makeCluster(getOption("cl.cores", 11), type = clusterType))
+```
+
+
+<!-- ## AIC Version -->
+
+<!-- **This version is if I indicated your research question fit an AIC Model Selection path rather than a hypothesis testing approach.** -->
+
+<!-- ## Instructions -->
+
+<!-- The final project should be written up just like a homework assignment. The difference is that I will not tell you what the question is, or provide more than just a rough structure for the paper. You are responsible for showing me that you have learned to write a paper (in my preferred format) through all 8 homework assignments. -->
+
+<!-- You are also responsible for deciding how to split up the work between you and your partner. However you decide to do it, you are *BOTH* responsible for the *whole* paper/grade. So make sure to edit each others work! It is best practice in the business world to have someone else edit documents, so this is not a criticism it is a fresh set of eyes. -->
+
+<!-- The project will be out of 150 points. -->
+
+<!-- 1. (10 points) Using the ``recs2015`` dataset determine a research question of interest to you, with the following limitations: -->
+
+<!-- a. It **MUST** be a question not previously addressed in a homework assignment or quiz. I will have you submit your variables and research question to me for a quiz score by July 22, at 8:00 am. Easiest way to change the question is to change the response variable. -->
+    
+<!-- b. It **MUST** have at least three explanatory variables (sorry no Chi-Squared research questions allowed.) -->
+    
+<!-- c. You **don't** have to restrict the data to the subset used for the homework assignments. But if you choose to use the full dataset, know that the categorical variables are coded numerically and you will need to refer to the codebook Excel file to understand what the codes represent. -->
+  
+<!-- 2. The paper will have the following sections: -->
+
+<!-- a. (10 points) Introduction -->
+
+## Introduction
+    
+<!-- b. Data Description/Summaries -->
+
+<!-- i. (10 points) Describe variables -->
+<!-- ii. (10 points) Summarize variables in words and with appropriate tables. -->
+<!-- iii. (10 points) Include data visualizations -->
+
+### Research Question
+
+Can the small household appliances in a home be used to predict the age of the homeowner?
+
+
+## Statistical Analysis
+
+<!-- c. Statistical Analysis -->
+
+```{r StatisticalAnalysis, echo=FALSE, eval=TRUE}
+
+allVariables <- c("HHAGE","VCR","PLAYSTA","TVSIZE1","TVCOLOR","CROCKPOT","TOAST","OUTGRILL","MICRO")
+
+recs2015data_subset <- recs2015data_full[,allVariables]
+
+# Remove rows where there is any missing data
+recs2015_subset_complete <- na.omit(recs2015data_subset)
+
+reducedModel_comp <- lm(HHAGE ~ VCR + PLAYSTA + TVSIZE1 +  
+                          TVCOLOR +  CROCKPOT + 
+                          TOAST + OUTGRILL + MICRO, 
+                        data=recs2015_subset_complete)
+options(na.action="na.fail", width=120)
+
+```
+
+<!-- i. (10 points) Statistical Full Model -->
+
+<!-- ii. (10 points) Describe the model selection approach and the criteria you will be using to decide on the "best" model. -->
+        
+<!-- iii. (10 points) Validity Conditions for full Model -->
+    
+
+## Statistical Results
+
+<!-- d. Statistical Results -->
+
+```{r StatisticalResults, echo=FALSE, eval=TRUE}
+
+clusterExport(clust, "recs2015_subset_complete")
+
+aicOutput_reduced <- dredge(reducedModel_comp, cluster = clust, rank="AIC",
+                            extra=c("R^2",adjRsq=function(x) summary(x)$adj.r.squared))
+# extra=c("R^2",adjRsq=function(x) summary(x)$adj.r.squared)
+
+
+
+```
+
+
+<!-- i. (10 points) Describe the best model according to your model selection criteria. Are there any models that are indistinguishable on the AIC scale? { Delta < 2 } -->
+
+```{r}
+
+# head(aicOutput_reduced,n=15)
+kable(head(aicOutput_reduced,n=15),caption="Table ##: Reduced Models")
+
+kable(summary(reducedModel_comp)$coefficients,caption="Table ##: Reduced Model Coefficients")
+
+```
+
+        
+<!-- ii. (10 points) Scope of Inference -->
+        
+<!-- iii. (5 points) Reassess validity conditions for the "best" model if the best model is not the full model. If the full model was the "best" model, if there was an indistinguishable model on the AIC scale, check the diagnostics for that model. If there wasn't an indistinguishable model, state that and why you don't need to reassess validity conditions. -->
+        
+<!-- iv.  (5 points) Discuss if the model you started with is considered a "good model" and if it is "trustworthy" or not. -->
+        
+## Conclusion
+<!-- e. Conclusion -->
+      
+<!-- i. (10 points) Next steps; limitations of the data, model or analysis. If you didn't start with a good model, what might you try if you were to perform the analysis again? -->
+        
+<!-- ii. (10 points) Paper conclusion to mirror introductory paragraph. Did your thesis/research question get answered? -->
+
+# Appendix
+      
+## Appendix A (Code and Output): 
+
+<!-- ### Code and output used in this report -->
+
+<!-- The code chunks below will automatically include all code and output used in your homework assignment. This is necessary for me to see what you have done. Do not modify (other than to change `eval=FALSE` to `eval=TRUE`) or remove the below code chunks. -->
+
+<!-- *f. Appendix -->
+
+<!-- *i. (10 points) Include all code and output -->
+    
+<!-- *3. Professionalism -->
+
+<!-- *a. (10 points) Structured in paper form, no spelling mistakes, good grammar, readable to someone outside of the class. -->
+
+<!-- ***You need to change `eval=FALSE` to `eval=TRUE` before compiling your report.*** -->
+
+```{r get-labels, echo = FALSE, eval=TRUE}
+codeLabs <- knitr::all_labels()
+codeLabs <- setdiff(codeLabs, c("setup", "get-labels"))
+```
+
+```{r all-code, ref.label=codeLabs, echo=TRUE, eval=FALSE}
+
+```
+
+## Appendix B (Packages):
+
+The R package `rmarkdown` [@R-rmarkdown] was used to create this report document using the `R` language [@R-base]. In addition, the following were packages used for the analysis and/or formatting of this document:
